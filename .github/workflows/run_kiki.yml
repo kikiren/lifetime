@@ -1,0 +1,39 @@
+name: Run Kiki Script Every 30 Mins
+
+on:
+  schedule:
+    - cron: '0,30 * * * *'
+  workflow_dispatch:
+
+jobs:
+  execute-script:
+    runs-on: ubuntu-latest
+    environment: kiki
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          if [ -f package.json ]; then
+            npm install
+          fi
+
+      - name: Run kiki.js
+        # 通过 env 映射将 GitHub 的变量传递给 Node.js 进程
+        env:
+          # 读取 Secrets (敏感)
+          OCP_APIM_SUBSCRIPTION_KEY: ${{ secrets.OCP_APIM_SUBSCRIPTION_KEY }}
+          LIFETIME_USERNAME: ${{ secrets.LIFETIME_USERNAME }}
+          LIFETIME_PASSWORD: ${{ secrets.LIFETIME_PASSWORD }}
+          
+          # 读取 Variables (普通配置)
+          PROGRAM_LIST: ${{ vars.PROGRAM_LIST }}
+          LOOKUP_DAY_COUNT: ${{ vars.LOOKUP_DAY_COUNT }}
+        run: node kiki.js
