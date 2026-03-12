@@ -97,17 +97,16 @@ export const book = async (lookUpDayCount, programList, apiKey, ltUsername, ltPa
                 console.log(`[${regId}] Completion request sent.`);
 
                 const status = await checkReservationStatus({ ...apiCtx, regId });
-                console.log(`[${regId}] Final Status: ${JSON.stringify(status)}`);
 
-                return { eventId: event.id, regId, status };
+                return status;
             } catch (err) {
                 console.error(`[Error] Failed to book event ${event.id}:`, err.message);
-                return { eventId: event.id, error: err.message };
+                return null;
             }
         });
 
         const results = await Promise.all(reservationTasks);
-        console.log('reservation-results', console.table(results));
+        console.table(results)
 
     } catch (error) {
         console.error("Critical Script Error:", error);
