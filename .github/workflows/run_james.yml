@@ -36,5 +36,6 @@ jobs:
           
           # 读取 Variables (普通配置)
           PROGRAM_LIST: ${{ vars.PROGRAM_LIST }}
-          LOOKUP_DAY_COUNT: ${{ vars.LOOKUP_DAY_COUNT }}
+          START_N_DAY_AFTER_TODAY: ${{ vars.START_N_DAY_AFTER_TODAY }}
+          END_N_DAY_AFTER_TODAY: ${{ vars.END_N_DAY_AFTER_TODAY }}
         run: node james.js

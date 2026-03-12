@@ -30,11 +30,11 @@ export const getJWT = async ({ token, ocpApimSubscriptionKey }) => {
     return { jwt: data.jwt, memberId: data.memberDetails.memberId };
 }
 
-export const getSchedule = async ({ token, jwt, ocpApimSubscriptionKey, lookUpDayCount, programList }) => {
+export const getSchedule = async ({ token, jwt, ocpApimSubscriptionKey, programList, startNDayAfterToday, endNDayAfterToday }) => {
     const startDate = new Date();
-    startDate.setDate(startDate.getDate() + 1);
+    startDate.setDate(startDate.getDate() + startNDayAfterToday);
     const endDate = new Date();
-    endDate.setDate(endDate.getDate() + lookUpDayCount);
+    endDate.setDate(endDate.getDate() + endNDayAfterToday);
     const pickleballScheduleParams = {
         // 动态生成的日期
         start: startDate.toISOString().split('T')[0],

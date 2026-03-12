@@ -8,14 +8,15 @@ import {
 } from './requests.js';
 
 
-const { OCP_APIM_SUBSCRIPTION_KEY, LIFETIME_USERNAME, LIFETIME_PASSWORD, PROGRAM_LIST, LOOKUP_DAY_COUNT } = process.env;
-const lookUpDayCount = parseInt(LOOKUP_DAY_COUNT) || 10
+const { OCP_APIM_SUBSCRIPTION_KEY, LIFETIME_USERNAME, LIFETIME_PASSWORD, PROGRAM_LIST, START_N_DAY_AFTER_TODAY, END_N_DAY_AFTER_TODAY } = process.env;
+const startNDayAfterToday = parseInt(START_N_DAY_AFTER_TODAY) || 1
+const endNDayAfterToday = parseInt(END_N_DAY_AFTER_TODAY) || 15
 const programList = PROGRAM_LIST.split("$$$")
 
-book(lookUpDayCount, programList, OCP_APIM_SUBSCRIPTION_KEY, LIFETIME_USERNAME, LIFETIME_PASSWORD);
+book(startNDayAfterToday, endNDayAfterToday, programList, OCP_APIM_SUBSCRIPTION_KEY, LIFETIME_USERNAME, LIFETIME_PASSWORD);
 
 
-async function book(lookUpDayCount, programList, apiKey, ltUsername, ltPassword) {
+async function book(startNDayAfterToday, endNDayAfterToday, programList, apiKey, ltUsername, ltPassword) {
     try {
         console.log("--- Step 1: Authentication ---");
         const { token, ssoId } = await getToken({
@@ -30,7 +31,7 @@ async function book(lookUpDayCount, programList, apiKey, ltUsername, ltPassword)
 
         console.log("\n--- Step 2: Fetching Schedule ---");
 
-        const schedule = await getSchedule({ ...apiCtx, lookUpDayCount, programList });
+        const schedule = await getSchedule({ ...apiCtx, programList, startNDayAfterToday, endNDayAfterToday });
         const flattenedEvents = schedule.results.flatMap(day =>
             day.dayParts.flatMap(dp =>
                 dp.startTimes.flatMap(st => st.activities)
