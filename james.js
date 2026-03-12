@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.james' });
+
 import {
     getToken, getJWT, getSchedule, getEventDetail,
     getRegistrationDetail, startRegistration,
@@ -5,7 +8,14 @@ import {
 } from './requests.js';
 
 
-export const book = async (lookUpDayCount, programList, apiKey, ltUsername, ltPassword) => {
+const { OCP_APIM_SUBSCRIPTION_KEY, LIFETIME_USERNAME, LIFETIME_PASSWORD, PROGRAM_LIST, LOOKUP_DAY_COUNT } = process.env;
+const lookUpDayCount = parseInt(LOOKUP_DAY_COUNT) || 10
+const programList = PROGRAM_LIST.split("$$$")
+
+book(lookUpDayCount, programList, OCP_APIM_SUBSCRIPTION_KEY, LIFETIME_USERNAME, LIFETIME_PASSWORD);
+
+
+async function book(lookUpDayCount, programList, apiKey, ltUsername, ltPassword) {
     try {
         console.log("--- Step 1: Authentication ---");
         const { token, ssoId } = await getToken({
@@ -33,7 +43,7 @@ export const book = async (lookUpDayCount, programList, apiKey, ltUsername, ltPa
         console.log("\n--- Step 3: Getting Detailed Info ---");
         // 过滤掉候补名单，并并行获取详情
         const detailTasks = flattenedEvents
-            .filter(e => e.cta?.toLowerCase() !== "waitlist")
+            .filter(event => event.isRegistrable && !event.isCanceled)
             .map(async (event) => {
                 const details = await getEventDetail({ ...apiCtx, eventId: event.id });
                 const regInfo = await getRegistrationDetail({ ...apiCtx, eventId: event.id });
@@ -49,7 +59,6 @@ export const book = async (lookUpDayCount, programList, apiKey, ltUsername, ltPa
         // 分类逻辑
         let registeredCount = 0;
         let tooSoonCount = 0;
-        let notFitsTimeCount = 0;
 
         // 筛选符合条件的预定目标
         const myReservableEvents = allEvents.filter(e => {
@@ -57,21 +66,13 @@ export const book = async (lookUpDayCount, programList, apiKey, ltUsername, ltPa
             const isUnregistered = e.registeredMembers?.length === 0;
             if (!isUnregistered) registeredCount++
 
-            const canReserve = e.registerCta?.text?.toLowerCase() === "reserve";
-
             const notTooSoon = !e.notifications?.some(n => n.type === "tooSoon");
             if (!notTooSoon) tooSoonCount++
 
-            // 时间过滤逻辑
-            const startHour = new Date(e.start).getHours();
-            const endHour = new Date(e.end).getHours();
-            const fitsTime = startHour !== 12 && startHour <= 18 && endHour !== 12;
-            if (!fitsTime) notFitsTimeCount++
-
-            return isUnregistered && canReserve && notTooSoon && fitsTime;
+            return isUnregistered && notTooSoon;
         });
 
-        console.log(`Stats: TotalReservable[${allEvents.length}] | Reserved[${registeredCount}] | TooSoon[${tooSoonCount}] | NotFitsTime:[${notFitsTimeCount}] | My Reservable[${myReservableEvents.length}]`);
+        console.log(`Stats: TotalReservable[${allEvents.length}] | Reserved[${registeredCount}] | TooSoon[${tooSoonCount}] | My Reservable[${myReservableEvents.length}]`);
 
         if (myReservableEvents.length === 0) {
             console.log("No events to book at this time.");

@@ -32,7 +32,7 @@ export const getJWT = async ({ token, ocpApimSubscriptionKey }) => {
 
 export const getSchedule = async ({ token, jwt, ocpApimSubscriptionKey, lookUpDayCount, programList }) => {
     const startDate = new Date();
-    startDate.setDate(startDate.getDate());
+    startDate.setDate(startDate.getDate() + 1);
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + lookUpDayCount);
     const pickleballScheduleParams = {
