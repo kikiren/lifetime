@@ -28,6 +28,7 @@ jobs:
       - name: Run kiki.js
         # 通过 env 映射将 GitHub 的变量传递给 Node.js 进程
         env:
+          TZ: 'America/New_York'
           # 读取 Secrets (敏感)
           OCP_APIM_SUBSCRIPTION_KEY: ${{ secrets.OCP_APIM_SUBSCRIPTION_KEY }}
           LIFETIME_USERNAME: ${{ secrets.LIFETIME_USERNAME }}
