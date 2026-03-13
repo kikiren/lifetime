@@ -2,7 +2,8 @@ name: Run Kiki Script Every 30 Mins
 
 on:
   schedule:
-    - cron: '0,30 * * * *'
+    - cron: '0,30 8-23,0-2 * * *'  # 对应美东 04:00 - 22:30
+    - cron: '0 3-7 * * *'         # 对应美东 23:00 - 03:00
   workflow_dispatch:
 
 jobs:
