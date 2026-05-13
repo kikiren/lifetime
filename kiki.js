@@ -72,9 +72,13 @@ async function book(startNDayAfterToday, endNDayAfterToday, programList, apiKey,
             if (!notTooSoon) tooSoonCount++
 
             // 时间过滤逻辑
+            const dayOfWeek = new Date(e.start).getDay();
+            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
             const startHour = new Date(e.start).getHours();
             const endHour = new Date(e.end).getHours();
-            const fitsTime = startHour !== 12 && startHour <= 17 && endHour !== 12;
+            // const fitsTime = startHour !== 12 && startHour <= 17 && endHour !== 12;
+            const fitsTime = startHour !== 12 && startHour <= 17 && isWeekend;
             if (!fitsTime) notFitsTimeCount++
 
             return isUnregistered && notTooSoon && fitsTime;
